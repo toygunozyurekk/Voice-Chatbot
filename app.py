@@ -41,14 +41,7 @@ def get_openai_response():
 
 
 
-@app.route('/get_response', methods=["POST"])
-def api_get_response():
-    data = request.json
-    message = data.get('message')
-    if not message:
-        return jsonify({"error": "No message provided"}), 400
-    response_message = get_openai_response(message)
-    return jsonify({"response": response_message})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
