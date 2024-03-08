@@ -1,16 +1,51 @@
 from openai import OpenAI
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS
+import whisper
+from werkzeug.utils import secure_filename
+import ssl
+from tempfile import NamedTemporaryFile
+
 
 load_dotenv()
-client = OpenAI()
-
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+model=whisper.load_model("base")
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    if not request.files:
+        return jsonify({'error': "Audio file is required."}), 400
+
+
+    # For each file, let's store the results in a list of dictionaries.
+    results = []
+
+    # Loop over every file that the user submitted.
+    for filename, handle in request.files.items():
+        # Create a temporary file.
+        # The location of the temporary file is available in `temp.name`.
+        temp = NamedTemporaryFile()
+        # Write the user's uploaded file to the temporary file.
+        # The file will get deleted when it drops out of scope.
+        handle.save(temp)
+        # Let's get the transcript of the temporary file.
+        result = model.transcribe(temp.name)
+        # Now we can store the result object for this file.
+        results.append({
+            'filename': filename,
+            'transcript': result['text'],
+        })
+
+    # This will be automatically converted to JSON.
+    return {'results': results}
+
 
 
 @app.route('/get_response', methods=['POST'])
@@ -37,7 +72,6 @@ def get_openai_response():
         return jsonify({'response': chat_response})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 
 

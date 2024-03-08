@@ -1,12 +1,12 @@
-import logo from './logo.svg';
+
 import './App.css';
-import OpenAIForm from './chatbot';
+import Chat from './chatscreen';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <OpenAIForm />
+        <Chat />
       </header>
     </div>
   );
