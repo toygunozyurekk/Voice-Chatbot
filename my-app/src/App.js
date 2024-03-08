@@ -1,14 +1,12 @@
 
 import './App.css';
-import OpenAIForm from './chatbot';
-import AudioTranscription from './AudioTranscription';
+import Chat from './chatscreen';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <OpenAIForm />
-        <AudioTranscription />
+        <Chat />
       </header>
     </div>
   );
