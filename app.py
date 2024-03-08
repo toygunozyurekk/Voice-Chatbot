@@ -1,16 +1,33 @@
 from openai import OpenAI
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS
+import whisper
+from werkzeug.utils import secure_filename
+import ssl
 
 load_dotenv()
-client = OpenAI()
-
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    if 'audio_file' not in request.files:
+        return jsonify({'error': "Audio file is required."}), 400
+
+    audio_file = request.files['audio_file']
+    try:
+        # Use OpenAI's Audio API for transcription
+        response = client.audio.transcriptions.create(audio=audio_file.read(), model="whisper-1")
+        transcription = response['text']
+        return jsonify({'transcription': transcription})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 @app.route('/get_response', methods=['POST'])
@@ -37,7 +54,6 @@ def get_openai_response():
         return jsonify({'response': chat_response})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 
 
