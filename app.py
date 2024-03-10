@@ -1,5 +1,5 @@
-from openai import OpenAI
-from flask import Flask, request, jsonify, send_from_directory
+from openai import OpenAI, OpenAIError
+from flask import Flask, request, jsonify, send_from_directory,abort
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS
@@ -7,7 +7,7 @@ import whisper
 from werkzeug.utils import secure_filename
 import ssl
 from tempfile import NamedTemporaryFile
-
+import openai
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
@@ -74,7 +74,23 @@ def get_openai_response():
         return jsonify({'error': str(e)}), 500
 
 
-
+@app.route('/whisper', methods=['POST'])
+def handler():
+    results = []
+    for filename, handle in request.files.items():
+            temp = NamedTemporaryFile(suffix=".wav",delete=False)
+            handle.save(temp)
+            with open(temp.name, "rb") as audio_file:
+                transcription = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file
+                )
+                # Append both filename and transcription to the results
+                results.append({
+                    'filename': filename,
+                    'transcript': transcription.text # Adjust according to the actual API response structure
+                })
+    return results
 
 
 if __name__ == '__main__':
