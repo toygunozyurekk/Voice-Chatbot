@@ -47,7 +47,7 @@ const Chat = () => {
       formData.append('file', blob, 'recording.wav');
   
       try {
-        const response = await axios.post('http://127.0.0.1:5000/transcribe', formData, {
+        const response = await axios.post('http://127.0.0.1:5000/whisper', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Accept': 'application/json',
